@@ -1,0 +1,104 @@
+﻿@model IEnumerable<Sibly.Models.Movie>
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Movies</h2>
+
+@Html.ActionLink("Add Movie", "New", "Movies", null, new { @class = "btn btn-primary btn-lg" })
+
+@if (!Model.Any())
+{
+    <p>We don't have any movies yet.</p>
+}
+else
+{
+    <table id="movies" class="table table-bordered table-hover table_space">
+        <thead>
+            <tr>
+                <th>Movie</th>
+                <th>Genre</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @*@foreach (var movie in Model)
+            {
+                <tr>
+
+                    <td>@Html.ActionLink(@movie.Name, "Edit", "Movies", new { id = @movie.MovieId }, null)</td>
+                    <td>@movie.Genre.Name</td>
+                    <td><button type="button" class="btn-link js-delete" data-movie-id="@movie.MovieId">Delete</button></td>
+                </tr>
+            }*@
+        </tbody>
+    </table>
+}
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            var table = $("#movies").DataTable({
+                ajax: {
+                    url: "/api/movie",
+                    dataSrc: ""
+                },
+                columns: [
+         {
+             data: "name",
+             render: function (data, type, movie) {
+                 return "<a href='/Movies/Edit/" + movie.MovieId + "'>" + movie.name + " </a>";
+             }
+         },
+             {
+                 data: "genre.name"
+             },
+                    {
+                        data: "movieId",
+                        render: function (data) {
+                            return "<button class='btn-link js-delete' data-movie-id=" + data + ">Delete</button>"
+
+                            
+                        }
+                    }
+
+                ]
+
+
+
+            })
+
+
+
+
+            $("#movies").on("click", function (event) {
+
+                var button = event.target.closest(".js-delete")
+                var buttonId = $(button).data("movie-id")
+                if (button) {
+                    bootbox.confirm("Are you sure you want to delete this Movie?", function (result) {
+                        if (result) {
+                            $.ajax({
+                                url: "/api/movie/" + buttonId,
+                                method: "DELETE",
+                                success: function () {
+                                    table.row(event.target.closest("tr")).remove().draw();
+                                }
+                            })
+
+                        }
+                    })
+                }
+            })
+        })
+
+
+
+  
+
+    </script>
+
+
+    }
+
